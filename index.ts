@@ -50,3 +50,47 @@ class AndParser<A, B> extends Parser<[A, B]> {
 }
 
 export const and = (p1, p2) => new AndParser(p1, p2);
+
+
+class RepeatParser<A> extends Parser<A[]> {
+    p: Parser<A>;
+    min: number;
+    max: number;
+
+    constructor(p: Parser<A>, min: number, max: number) {
+        if(min < 0 || max < min) {
+            throw new Error(`Invalid min+max for RepeatParser: received ${min}-${max}.`)
+        }
+        super();
+        this.p = p;
+        this.min = min;
+        this.max = max;
+    }
+
+    /*
+        Backtracking: how do we handle retrying for cases that fail naively?
+            e.g.
+            digit -> '0' | '1', etc.
+            integer -> digit+
+            float -> digit+ & '.' & digit+
+            start -> integer & float
+
+        start.parse('12.34')
+            should match as integer '1' and float '2.34'
+            if +/* are greedy first, then integer will grab '12',
+            then the right side of the & will fail, and & needs
+            some way to re-run integer, telling it to match at least
+            one fewer character
+
+            constraints
+            - ideally & wouldn't need to know the type of its child
+            - same parser object might be used multiple places, do don't
+              want to have to mutate the instance directly
+            - ok to add optional params to `parse`?
+    */
+    parse(input: string, i: number): ParseResult<A[]> {
+        return {type: 'success', result: [this, []], nextIndex: i};
+    }
+}
+
+export const repeat = (p, min: number, max: number) => new RepeatParser(p, min, max);
