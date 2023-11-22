@@ -15,7 +15,7 @@ class CharacterParser extends Parser<string> {
         this.ch = ch;
     }
 
-    parse(input: string, i: number): ParseResult<string> {
+    parse(input: string, i: number = 0): ParseResult<string> {
         if(input[i] == this.ch) {
             return {type: 'success', result: [this, this.ch], nextIndex: i+1}
         } else {
@@ -36,7 +36,7 @@ class AndParser<A, B> extends Parser<[A, B]> {
         this.p2 = p2;
     }
 
-    parse(input: string, i: number): ParseResult<[A, B]> {
+    parse(input: string, i: number = 0): ParseResult<[A, B]> {
         let r1 = this.p1.parse(input, i);
         if(r1.type === 'error') {
             return r1;
@@ -88,8 +88,23 @@ class RepeatParser<A> extends Parser<A[]> {
               want to have to mutate the instance directly
             - ok to add optional params to `parse`?
     */
-    parse(input: string, i: number): ParseResult<A[]> {
-        return {type: 'success', result: [this, []], nextIndex: i};
+    parse(input: string, i: number = 0): ParseResult<A[]> {
+        const results: ParseResult<A>[] = [];
+        const matched = true;
+        const initialIndex = i;
+        let currentIndex = i;
+        
+        while(matched && results.length <= this.max) {
+            let r = this.p.parse(input, currentIndex);
+            if(r.type === 'error') break;
+            results.push(r);
+            currentIndex = r.nextIndex;
+        }
+
+        if(results.length < this.min) {
+            return {type: 'error', index: currentIndex, message: `Expected at least ${this.min} matches, but only found ${results.length}`};
+        }
+        return {type: 'success', result: [this, results.map(r => r[1])], nextIndex: currentIndex};
     }
 }
 
