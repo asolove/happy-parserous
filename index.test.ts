@@ -69,3 +69,20 @@ describe("Repeat", () => {
         expect(r.type).toEqual('error');
     });
 });
+
+
+describe("Backtracking", () => {
+    test('on sequences', () => {
+        let integer = repeat(char('1'), 1, Infinity);
+        let float = and(
+            repeat(char('1'), 1, Infinity),
+            and(char('.'), repeat(char('1'), 1, Infinity)));
+        let intAndFloat = and(integer, float);
+
+        // On first pass, integer will consume up to '11', then 
+        // the float parser will fail to match. Need to backtrack
+        // so that integer just consumes '1', and flot can succeed.
+        let r = intAndFloat.parse('11.11');
+        expect(r.type).toEqual('success');
+    })
+})

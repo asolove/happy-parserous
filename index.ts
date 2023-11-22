@@ -67,27 +67,6 @@ class RepeatParser<A> extends Parser<A[]> {
         this.max = max;
     }
 
-    /*
-        Backtracking: how do we handle retrying for cases that fail naively?
-            e.g.
-            digit -> '0' | '1', etc.
-            integer -> digit+
-            float -> digit+ & '.' & digit+
-            start -> integer & float
-
-        start.parse('12.34')
-            should match as integer '1' and float '2.34'
-            if +/* are greedy first, then integer will grab '12',
-            then the right side of the & will fail, and & needs
-            some way to re-run integer, telling it to match at least
-            one fewer character
-
-            constraints
-            - ideally & wouldn't need to know the type of its child
-            - same parser object might be used multiple places, do don't
-              want to have to mutate the instance directly
-            - ok to add optional params to `parse`?
-    */
     parse(input: string, i: number = 0): ParseResult<A[]> {
         const results: ParseResult<A>[] = [];
         const matched = true;
