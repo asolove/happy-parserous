@@ -11,7 +11,7 @@ class CharacterParser extends Parser<string> {
 
     constructor(ch: string) {
         super();
-        if(ch.length !== 1) throw new Error(`Invalid character parser: expected one character but received ${ch}`);
+        if(typeof ch !== 'string' || ch.length !== 1) throw new Error(`Invalid character parser: expected one character but received ${ch}`);
         this.ch = ch;
     }
 
