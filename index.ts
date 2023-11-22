@@ -3,7 +3,7 @@ type ParseResult<A> =
     | {type: 'error', index: number, message: string}
 
 abstract class Parser<A> {
-    abstract parse(input: string, i: number): ParseResult<A>
+    abstract *parse(input: string, i: number): IterableIterator<ParseResult<A>>
 }
 
 class CharacterParser extends Parser<string> {
@@ -15,7 +15,7 @@ class CharacterParser extends Parser<string> {
         this.ch = ch;
     }
 
-    parse(input: string, i: number = 0): ParseResult<string> {
+    *parse(input: string, i: number = 0): IterableIterator<ParseResult<string>> {
         if(input[i] == this.ch) {
             return {type: 'success', result: [this, this.ch], nextIndex: i+1}
         } else {
@@ -36,12 +36,12 @@ class AndParser<A, B> extends Parser<[A, B]> {
         this.p2 = p2;
     }
 
-    parse(input: string, i: number = 0): ParseResult<[A, B]> {
-        let r1 = this.p1.parse(input, i);
+    *parse(input: string, i: number = 0): IterableIterator<ParseResult<[A, B]>> {
+        let r1 = this.p1.parse(input, i).next().value;
         if(r1.type === 'error') {
             return r1;
         }
-        let r2 = this.p2.parse(input, r1.nextIndex);
+        let r2 = this.p2.parse(input, r1.nextIndex).next().value;
         if(r2.type === 'error') {
             return r2;
         }
@@ -67,14 +67,14 @@ class RepeatParser<A> extends Parser<A[]> {
         this.max = max;
     }
 
-    parse(input: string, i: number = 0): ParseResult<A[]> {
+    *parse(input: string, i: number = 0): IterableIterator<ParseResult<A[]>> {
         const results: ParseResult<A>[] = [];
         const matched = true;
         const initialIndex = i;
         let currentIndex = i;
         
         while(matched && results.length <= this.max) {
-            let r = this.p.parse(input, currentIndex);
+            let r = this.p.parse(input, currentIndex).next().value;
             if(r.type === 'error') break;
             results.push(r);
             currentIndex = r.nextIndex;
@@ -88,3 +88,5 @@ class RepeatParser<A> extends Parser<A[]> {
 }
 
 export const repeat = (p, min: number, max: number) => new RepeatParser(p, min, max);
+
+export const parse = (p, str: string) => p.parse(str, 0).next().value;

@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
 
-import { and, char, repeat } from './index';
+import { and, char, parse, repeat } from './index';
 
 describe("Characters", () => {
     test("matches character", () => {
         let a = char('a');
-        expect(a.parse('a', 0).type).toEqual('success');
-        expect(a.parse('b', 0).type).toEqual('error');
+        expect(parse(a, 'a').type).toEqual('success');
+        expect(parse(a, 'b').type).toEqual('error');
 
         expect(() => { char('ab') }).toThrow();
     });
