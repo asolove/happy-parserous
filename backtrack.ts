@@ -97,7 +97,7 @@ function* item(input: string): Iterable<PartialParse<string>> {
     if(input[0]) {
         yield {value: input[0], rest: input.slice(1)};
     } else {
-        yield* [][Symbol.iterator]();
+        yield* zero(input);
     }
 }
 
@@ -126,7 +126,17 @@ const char = (ch: string) => sat(x => x === ch);
 const digit = sat(x => x >= '0' && x <= '9');
 const upper = sat(x => x >= 'A' && x <= 'Z' );
 const lower = sat(x => x >= 'a' && x <= 'z');
-const alpha = plus(upper, lower)
+const alpha = plus(upper, lower);
+
+const string: (string) => Parser<string> = (st: string) => {
+    return function*(input: string) {
+        if(input.slice(0, st.length) === st) {
+            yield {value: st, rest: input.slice(st.length)}
+        }  else {
+            return zero;
+        }
+    }
+}
 
 function many<A>(p: Parser<A>): Parser<A[]> {
     return plus(bind(p, (r1) => {
@@ -151,11 +161,12 @@ function plus<A>(p1: Parser<A>, p2: Parser<A>): Parser<A> {
     }
 }
 
-const int = bind(many1(digit), (ds) => result(parseInt(ds.join(''))));
-const float = seq(int, seq(char('.'), int));
+const nat = bind(many1(digit), (ds) => result(parseInt(ds.join(''))));
+const int = plus(nat, bind(seq(char('-'), nat), ([_c, n]) => result(-n)));
+const float = seq(int, seq(char('.'), nat));
 
-let p = seq(int, float);
+let p = seq(seq(seq(many(alpha), string('aa')), many(alpha)),  seq(int, float));
 
-for(const {value, rest} of p("1234.1234")) {
+for(const {value, rest} of p("aaa-01234.012")) {
     console.log({value, rest});
 }
