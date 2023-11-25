@@ -1,55 +1,64 @@
 // Reminding myself how to build a backtracking monad
 // to solve 8 queens.
-function pickCol(next) {
-    for(let i=0; i<8; i++) {
-        let r = next(i);
-        if (r.type==='success') {
-            return r;
+function countNQueens(n) {
+
+    function pickCol(next) {
+        for(let i=0; i<n; i++) {
+            let r = next(i);
+            if (r.type==='success') {
+                return r;
+            }
+        }
+        return {type: 'error', message: 'ran out of values'};
+    }
+    
+    function checkCol(val, n) {
+        for(let i=0; i<val.length; i++) {
+            if(val[i] === n) 
+                return false;
+            if(Math.abs(val[i] - n) === val.length - i)
+                return false;
+        }
+        return true;
+    }
+    
+    
+    function guard(test, next) {
+        if(test()) {
+            return next();
+        } else {
+            return {type: 'error', message: 'failed guard'};
         }
     }
-    return {type: 'error', message: 'ran out of values'};
-}
 
-function checkCol(val, n) {
-    for(let i=0; i<val.length; i++) {
-        if(val[i] === n) 
-            return false;
-        if(Math.abs(val[i] - n) === val.length - i)
-            return false;
+
+    let r = 0; 
+    function done(value) {
+        r++;
+        return {type: 'error', message: `Found ${r}: find another.`};
     }
-    return true;
-}
-
-function done(value) {
-    return {type: 'success', value}
-}
-
-function guard(test, next) {
-    if(test()) {
-        return next();
-    } else {
-        return {type: 'error', message: 'failed guard'};
-    }
-}
-
-let next = done;
-for(let i=0; i<8; i++) {
-    let oldNext = next;
-    next = (val) => {
-        return pickCol((n) => {
-            return guard(() => {
-                return checkCol(val, n);
-            }, () => {
-                return oldNext([...val, n])
+    
+    let next = done;
+    for(let i=0; i<n; i++) {
+        let oldNext = next;
+        next = (val) => {
+            return pickCol((n) => {
+                return guard(() => checkCol(val, n), () => {
+                    return oldNext([...val, n])
+                });
             });
-        });
-    };
+        };
+    }
+    
+    console.log(next([]));
+    return r;
 }
 
-console.log(next([]));
 
 // Ok so that works but it forces us to write the whole thing
-// as a stack of callbacks, which is unpleasant for a parser DSL
+// as a stack of callbacks to share state, which is unpleasant
+// for a parser DSL.
+// 
 // Can we find a way to sugar this up so we have nice combinators
 // that don't have be nested scopes to combine data?
 
@@ -57,7 +66,96 @@ console.log(next([]));
     digit = char('1') -> (c) => (s, next) => if s = c then next(i+1) else error
     int = oneOrMore(digit) -> (p) => (s, next) => 
     float = seq(oneOrMore(digit), char('.'), oneOrMore(digit))
+    program = seq(float, EOF)
 
-    parse(float)
-        -> 
+    seq(a, b) -> (next) => a((v1) => b((v2 => next())))
+
+    base language:
+    char('a') -> 'a' or error
+    or a, b -> needs backtracking
+    seq -> needs backtracking
+
+    sugar:
+    a+ -> seq(a, a*)
+    a* -> or(a, next)
 */
+
+type PartialParse<A> = {value: A, rest: string};
+type Parser<A> = (input: string) => Iterable<PartialParse<A>>
+
+function result<A>(value: A): Parser<A> {
+    return function*(input: string) {
+        yield {value, rest: input};
+    }
+}
+
+const zero: Parser<never> = (_input: string) => {
+    return [][Symbol.iterator]();
+};
+
+function* item(input: string): Iterable<PartialParse<string>> {
+    if(input[0]) {
+        yield {value: input[0], rest: input.slice(1)};
+    } else {
+        yield* [][Symbol.iterator]();
+    }
+}
+
+function bind<A, B>(p1: Parser<A>, next: (a: A) => Parser<B>): Parser<B> {
+    return function*(input: string) {
+        for(const {value, rest} of p1(input)) {
+            yield* next(value)(rest);
+        }
+    }
+}
+
+function seq<A, B>(p1: Parser<A>, p2: Parser<B>): Parser<[A, B]> {
+    return bind(p1, (a) => bind(p2, (b) => result([a, b])));
+}
+
+function sat(test: (string) => boolean): Parser<string> {
+    return bind(item, (ch: string) => {
+        if(test(ch)) {
+            return result(ch);
+        } else {
+            return zero;
+        }
+    })
+}
+const char = (ch: string) => sat(x => x === ch);
+const digit = sat(x => x >= '0' && x <= '9');
+const upper = sat(x => x >= 'A' && x <= 'Z' );
+const lower = sat(x => x >= 'a' && x <= 'z');
+const alpha = plus(upper, lower)
+
+function many<A>(p: Parser<A>): Parser<A[]> {
+    return plus(bind(p, (r1) => {
+        return bind(many(p), (rs) => {
+            return result([r1, ...rs]);
+        });
+    }), result([]));
+}
+
+function many1<A>(p: Parser<A>): Parser<A[]> {
+    return bind(p, (r1) => {
+        return bind(many(p), (rs) => {
+            return result([r1, ...rs]);
+        });
+    });
+}
+
+function plus<A>(p1: Parser<A>, p2: Parser<A>): Parser<A> {
+    return function* (input: string) {
+        yield* p1(input);
+        yield* p2(input);
+    }
+}
+
+const int = bind(many1(digit), (ds) => result(parseInt(ds.join(''))));
+const float = seq(int, seq(char('.'), int));
+
+let p = seq(int, float);
+
+for(const {value, rest} of p("1234.1234")) {
+    console.log({value, rest});
+}
