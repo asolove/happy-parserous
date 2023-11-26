@@ -1,7 +1,9 @@
 <html>
+<head>
 
-<style>
+<title>HappyParserous</title>
 
+<style type="text/css">
 @property --angle {
   syntax: '<angle>';
   inherits: false;
@@ -12,10 +14,13 @@ html {
     --bg-color: hsl(282, 100%, 10%);
     background-color: var(--bg-color);
 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-family: ui-monospace, monospace;
 }
 
 .main {
+    display: flex;
+    column-gap: 20px;
+    align-content: stretch;
     outline: 1px solid hsla(158, 76%, 86%, 0.7);
     margin: 10px;
     position: absolute;
@@ -40,10 +45,38 @@ html {
   border-radius: 8px;
   --angle: 180deg;
   background: conic-gradient(from var(--angle), hsl(350, 100%, 50%), hsl(290, 90%, 40%), hsl(190, 100%, 80%),  hsl(80, 100%, 50%), hsl(350, 100%, 50%));
-  background: conic-gradient(from var(--angle), hsl(350, 100%, 50%), hsl(290, 90%, 40%), hsl(190, 100%, 80%),  hsl(80, 100%, 50%), hsl(350, 100%, 50%));
 
-  animation: rotate 10s linear infinite;
+  /* xmassy 
+  background: conic-gradient(from var(--angle), hsl(350, 100%, 50%), hsl(350, 100%, 100%),  hsl(126, 56%, 21%), hsl(350, 100%, 100%), hsl(350, 100%, 50%),  hsl(350, 100%, 100%),  hsl(126, 56%, 21%),  hsl(350, 100%, 100%), hsl(350, 100%, 50%),  hsl(350, 100%, 100%),  hsl(126, 56%, 21%),  hsl(350, 100%, 100%), hsl(350, 100%, 50%));
+  */
+
+  animation: rotate 20s linear infinite;
 }
+
+.main fieldset {
+    flex: 1;
+    border-color: hsla(158, 76%, 86%, 0.2);
+    color: hsla(158, 76%, 86%, 0.5);
+    border-radius: 8px;
+}
+
+
+textarea, input {
+    background: transparent;
+    border: 1px solid hsla(158, 76%, 86%, 0.2);
+    outline-color: hsla(159, 98%, 63%, 0.7);
+    outline-width: 10px;
+    font: inherit;
+    color: white;
+    font: inherit;
+    background: rgba(0,0,0,0.3);
+}
+
+textarea {
+    width: 100%;
+    height: 100%;
+}
+
 
 @keyframes rotate{
   from {
@@ -58,10 +91,23 @@ html {
 }
 </style>
 
+</head>
 <body>
     
 <div class="main">
-  Huh
+    <fieldset>
+        <legend>Matchers</legend>
+
+        <ul>
+            <input placeholder="name">
+            <input placeholder="rule">
+        </ul>
+    </fieldset>
+
+    <fieldset>
+        <legend>String</legend>
+        <textarea></textarea>
+    </fieldset>
 </div>
 
 </body>
