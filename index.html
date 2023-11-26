@@ -1,42 +1,68 @@
 <html>
+
 <style>
-body {
-    --bg-color: rgb(20, 10, 40);
-    --shiny: rgb(150, 230, 150);
-    background: var(--bg-color);
+
+@property --angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 10deg;
+}
+
+html {
+    --bg-color: hsl(282, 100%, 10%);
+    background-color: var(--bg-color);
+
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
 .main {
-    position:fixed;
-    top: 30px; left: 10px; bottom: 10px; right: 10px;
-    box-shadow: 
-        0px 0px 3px 3px rgba(150, 230, 150, 0.6),
-        inset 0px 0px 2px 2px rgba(150, 230, 150, 0.2);
+    outline: 1px solid hsla(158, 76%, 86%, 0.7);
+    margin: 10px;
+    position: absolute;
+    left: 10px; right: 10px; top: 10px; bottom: 10px;
+    padding: 20px;
+    box-sizing: border-box;
+    color: #FFF;
+    background: var(--bg-color);
+    background-clip: padding-box;
+    border: solid 5px transparent;
+    border-radius: 12px;
+}
+.main:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  margin: -2px;
+  border-radius: 8px;
+  --angle: 180deg;
+  background: conic-gradient(from var(--angle), hsl(350, 100%, 50%), hsl(290, 90%, 40%), hsl(190, 100%, 80%),  hsl(80, 100%, 50%), hsl(350, 100%, 50%));
+  background: conic-gradient(from var(--angle), hsl(350, 100%, 50%), hsl(290, 90%, 40%), hsl(190, 100%, 80%),  hsl(80, 100%, 50%), hsl(350, 100%, 50%));
 
-    outline: 1px solid rgba(20, 10, 40);
-    border: 1px solid rgba(150, 230, 150, 1);
-    border-radius: 2px;
+  animation: rotate 10s linear infinite;
 }
 
-h1 { 
-    background: var(--bg-color);
-    padding: 5px 10px;
-    font-size: 100%;
-    position: absolute;
-    left: 50px;
-    top: -25px;
-    text-align: center;
-    color: var(--shiny);
-    border: 1px solid var(--shiny);
-    box-shadow: 
-        0px 0px 3px 3px rgba(150, 230, 150, 0.6),
-        inset 0px 0px 2px 2px rgba(150, 230, 150, 0.2);
-
-    border-radius: 4px;
-    font-family: monospace;
+@keyframes rotate{
+  from {
+    --angle: 10deg;
+  }
+  50% {
+    --angle: 190deg;
+  }
+  to {
+    --angle: 370deg;
+  }
 }
 </style>
+
+<body>
+    
 <div class="main">
-    <h1>HappyParserous</h1>
+  Huh
 </div>
+
+</body>
 </html>
