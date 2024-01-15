@@ -1,5 +1,7 @@
 # Happy Parserous
 
+![Screenshot: writing parsing rules and seeing how they match inside a sample text](screenshot.png)
+
 :warning: Doesn't work yet.
 
 A JavaScript parser generator generator and visualizer, with a festival feel, designed for Advent of Code challenges.
